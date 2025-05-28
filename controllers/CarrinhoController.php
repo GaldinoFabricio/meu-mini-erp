@@ -27,6 +27,61 @@ class CarrinhoController
         header("Location: /carrinho");
     }
 
+    public function comprar()
+    {
+        session_start();
+
+        $produto_id = $_POST['produto_id'] ?? null;
+        $quantidade = $_POST['quantidade'] ?? 1;
+
+        if (!$produto_id || $quantidade < 1) {
+            $_SESSION['erro'] = "Produto ou quantidade inválidos.";
+            header('Location: /produtos');
+            exit;
+        }
+
+        // Buscar produto
+        $produto = Produto::buscarPorId($produto_id);
+        if (!$produto) {
+            $_SESSION['erro'] = "Produto não encontrado.";
+            header('Location: /produtos');
+            exit;
+        }
+
+        // Buscar estoque do produto
+        $estoque = Estoque::buscarPorProdutoId($produto_id);
+        if (!$estoque || $estoque['quantidade'] < $quantidade) {
+            $_SESSION['erro'] = "Estoque insuficiente para o produto {$produto['nome']}.";
+            header('Location: /produtos');
+            exit;
+        }
+
+        // Inicia carrinho na sessão, se não existir
+        if (!isset($_SESSION['carrinho'])) {
+            $_SESSION['carrinho'] = [];
+        }
+
+        // Se produto já está no carrinho, soma quantidade
+        if (isset($_SESSION['carrinho'][$produto_id])) {
+            $_SESSION['carrinho'][$produto_id]['quantidade'] += $quantidade;
+        } else {
+            $_SESSION['carrinho'][$produto_id] = [
+                'produto_id' => $produto_id,
+                'nome' => $produto['nome'],
+                'preco' => $produto['preco'],
+                'quantidade' => $quantidade
+            ];
+        }
+
+        // Atualiza o estoque no banco (reduz a quantidade)
+        $nova_quantidade = $estoque['quantidade'] - $quantidade;
+        Estoque::atualizar($estoque['id'], $nova_quantidade);
+
+        $_SESSION['sucesso'] = "Produto {$produto['nome']} adicionado ao carrinho.";
+        header('Location: /produtos');
+        exit;
+    }
+
     public function mostrarCarrinho()
     {
         $carrinho = $_SESSION['carrinho'] ?? [];

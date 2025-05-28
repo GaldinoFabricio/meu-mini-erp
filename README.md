@@ -31,14 +31,56 @@ Este projeto é um mini ERP desenvolvido como parte de um processo seletivo. Ele
 
 /meu-mini-erp/
 │
-├── config/ # Conexão com banco
-├── controllers/ # Lógica de negócio
-├── models/ # Interações com o BD
-├── views/ # Interface com Bootstrap
-├── public/ # Ponto de entrada (index.php)
-├── helpers/ # Funções extras (frete, e-mail, cep)
-├── sql/estrutura.sql # Script SQL
-└── README.md
+├── config/
+│   └── database.php          # Conexão com MySQL
+│
+├── controllers/
+│   ├── ProdutoController.php
+│   ├── PedidoController.php
+│   ├── CupomController.php
+│   ├── EstoqueController.php
+│   └── WebhookController.php
+│
+├── models/
+│   ├── Produto.php
+│   ├── Pedido.php
+│   ├── Cupom.php
+│   ├── Estoque.php
+│   └── Database.php          # Classe genérica de conexão
+│
+├── views/
+│   ├── templates/
+│   │   ├── header.php
+│   │   └── footer.php
+│   ├── produtos/
+│   │   └── form.php          # Tela de cadastro e edição
+│   ├── pedidos/
+│   │   └── carrinho.php      # Carrinho e finalização
+│   └── cupons/
+│       └── gerenciar.php
+│
+├── public/
+│   ├── index.php             # Roteador principal
+│   ├── css/
+│   │   └── style.css
+│   ├── js/
+│   │   └── script.js
+│   └── assets/
+│       └── (imagens etc.)
+│
+├── sql/
+│   └── estrutura.sql         # Script para criar as 4 tabelas
+│
+├── helpers/
+│   ├── functions.php         # Funções genéricas (ex: validar CEP, calcular frete)
+│   └── mailer.php            # Script para envio de e-mail
+│
+├── routes/
+│   └── web.php               # Define as rotas (se desejar fazer um mini router)
+│
+├── .gitignore
+├── README.md
+└── composer.json (opcional)
 
 
 ---

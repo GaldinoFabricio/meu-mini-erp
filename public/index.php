@@ -33,3 +33,5 @@ $webhookController = new WebhookController();
 if ($uri === '/webhook' && $metodo === 'POST') {
     $webhookController->receber();
 }
+
+require_once __DIR__ . '/../routes/web.php';
