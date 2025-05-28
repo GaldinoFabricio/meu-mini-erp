@@ -9,23 +9,52 @@ class CarrinhoController
 {
     public function adicionar()
     {
-        $produto_id = $_POST['produto_id'];
-        $quantidade = $_POST['quantidade'] ?? 1;
+        session_start();
+
+        // Limpa qualquer output anterior
+        ob_clean();
+
+        // Define o header JSON
+        header('Content-Type: application/json');
+
+        $produto_id = $_GET['produto_id'] ?? null;
+        $quantidade = $_GET['quantidade'] ?? 1;
+
+        if (!$produto_id) {
+            echo json_encode(['erro' => 'ID do produto não informado.']);
+            die();
+        }
 
         $produto = Produto::buscarPorId($produto_id);
         if (!$produto) {
-            echo "Produto não encontrado";
-            return;
+            echo json_encode(['erro' => 'Produto não encontrado.']);
+            die();
         }
 
-        $_SESSION['carrinho'][$produto_id] = [
-            'nome' => $produto['nome'],
-            'preco' => $produto['preco'],
-            'quantidade' => $quantidade
-        ];
+        // Iniciar carrinho se não existir
+        if (!isset($_SESSION['carrinho'])) {
+            $_SESSION['carrinho'] = [];
+        }
 
-        header("Location: /carrinho");
+        // Adiciona ou atualiza item
+        if (isset($_SESSION['carrinho'][$produto_id])) {
+            $_SESSION['carrinho'][$produto_id]['quantidade'] += $quantidade;
+            $_SESSION['quantidade'] += $quantidade;
+        } else {
+            $_SESSION['carrinho'][$produto_id] = [
+                'nome' => $produto['nome'],
+                'preco' => $produto['preco'],
+                'quantidade' => $quantidade
+            ];
+        }
+
+        echo json_encode([
+            'sucesso' => true,
+            'mensagem' => "Produto {$produto['nome']} adicionado ao carrinho."
+        ]);
+        die();
     }
+
 
     public function comprar()
     {

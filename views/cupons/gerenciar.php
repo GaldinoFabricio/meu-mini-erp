@@ -1,5 +1,3 @@
-<?php include __DIR__ . '/../templates/header.php'; ?>
-
 <h2>Gerenciar Cupons</h2>
 
 <form method="POST" class="mb-4">
@@ -51,5 +49,3 @@
         <?php endforeach; ?>
     </tbody>
 </table>
-
-<?php include __DIR__ . '/../templates/footer.php'; ?>

@@ -12,6 +12,12 @@ switch ($uri) {
         $controller->index();
         break;
 
+    case '/produtos/criar':
+        require_once __DIR__ . '/../controllers/ProdutoController.php';
+        $controller = new ProdutoController();
+        $controller->form();
+        break;
+
     case '/produtos/salvar':
         require_once __DIR__ . '/../controllers/ProdutoController.php';
         $controller = new ProdutoController();
@@ -40,6 +46,13 @@ switch ($uri) {
         require_once __DIR__ . '/../controllers/CarrinhoController.php';
         $controller = new CarrinhoController();
         $controller->mostrarCarrinho();
+        break;
+
+    case '/carrinho/adicionar':
+        require_once __DIR__ . '/../controllers/CarrinhoController.php';
+        $controller = new CarrinhoController();
+        $controller->adicionar();
+        // NÃO adicione break aqui - o método adicionar() já faz die()
         break;
 
     case '/carrinho/comprar':
