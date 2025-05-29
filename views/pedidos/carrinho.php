@@ -1,4 +1,5 @@
 <h2>Carrinho</h2>
+
 <?php if (empty($carrinho)): ?>
     <p>Seu carrinho está vazio.</p>
 <?php else: ?>
@@ -9,15 +10,19 @@
                 <th>Preço</th>
                 <th>Qtd</th>
                 <th>Total</th>
+                <th>Acoes</th>
             </tr>
         </thead>
         <tbody>
-            <?php foreach ($carrinho as $item): ?>
+            <?php foreach ($carrinho as $key => $item): ?>
                 <tr>
                     <td><?= $item['nome'] ?></td>
                     <td>R$ <?= number_format($item['preco'], 2, ',', '.') ?></td>
                     <td><?= $item['quantidade'] ?></td>
                     <td>R$ <?= number_format($item['preco'] * $item['quantidade'], 2, ',', '.') ?></td>
+                    <td>
+                        <a onClick="remover(<?=$key?>)">X</a>
+                    </td>
                 </tr>
             <?php endforeach; ?>
         </tbody>
@@ -42,3 +47,22 @@
         <button type="submit" class="btn btn-success">Finalizar Pedido</button>
     </form>
 <?php endif; ?>
+
+<script>
+function remover(id) {
+    fetch('/carrinho/remover?produto_id=' + id, {
+        method: 'GET'
+    })
+    .then(response => {
+        if (response.ok) {
+            window.location.reload();
+        } else {
+            alert('Erro ao remover item do carrinho.');
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        alert('Erro ao remover item do carrinho.');
+    });
+}
+</script>

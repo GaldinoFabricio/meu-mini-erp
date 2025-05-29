@@ -49,3 +49,30 @@
         <?php endforeach; ?>
     </tbody>
 </table>
+
+<script>
+    document.querySelector('form').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData.entries());
+
+        fetch('/cupons/criar', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.sucesso) {
+                alert(data.mensagem);
+                window.location.reload();
+            } else {
+                alert(data.erro);
+            }
+        })
+        .catch(error => console.error('Erro ao criar cupom:', error));
+    });
+</script>
