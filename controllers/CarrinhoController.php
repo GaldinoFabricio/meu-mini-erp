@@ -38,6 +38,7 @@ class CarrinhoController
             $_SESSION['carrinho'][$produto_id] = [
                 'nome' => $produto['nome'],
                 'preco' => $produto['preco'],
+                'preco_total' => $produto['preco'] * $quantidade,
                 'quantidade' => $quantidade
             ];
         }
@@ -63,7 +64,6 @@ class CarrinhoController
             exit;
         }
 
-        // Buscar produto
         $produto = Produto::buscarPorId($produto_id);
         if (!$produto) {
             $_SESSION['erro'] = "Produto não encontrado.";
@@ -71,7 +71,6 @@ class CarrinhoController
             exit;
         }
 
-        // Buscar estoque do produto
         $estoque = Estoque::buscarPorProdutoId($produto_id);
         if (!$estoque || $estoque['quantidade'] < $quantidade) {
             $_SESSION['erro'] = "Estoque insuficiente para o produto {$produto['nome']}.";
@@ -79,12 +78,10 @@ class CarrinhoController
             exit;
         }
 
-        // Inicia carrinho na sessão, se não existir
         if (!isset($_SESSION['carrinho'])) {
             $_SESSION['carrinho'] = [];
         }
 
-        // Se produto já está no carrinho, soma quantidade
         if (isset($_SESSION['carrinho'][$produto_id])) {
             $_SESSION['carrinho'][$produto_id]['quantidade'] += $quantidade;
         } else {
@@ -96,13 +93,53 @@ class CarrinhoController
             ];
         }
 
-        // Atualiza o estoque no banco (reduz a quantidade)
         $nova_quantidade = $estoque['quantidade'] - $quantidade;
         Estoque::atualizar($estoque['id'], $nova_quantidade);
 
         $_SESSION['sucesso'] = "Produto {$produto['nome']} adicionado ao carrinho.";
         header('Location: /produtos');
         exit;
+    }
+
+    public function atualizarQuantidade()
+    {
+        session_start();
+        ob_clean();
+
+        header('Content-Type: application/json');
+        $input = file_get_contents('php://input');
+        $dados = json_decode($input, true);
+
+        $produto_id = $dados['produto_id'] ?? null;
+        $action = $dados['action'] ?? null;
+
+        if (!$produto_id || !isset($_SESSION['carrinho'][$produto_id])) {
+            echo json_encode(['erro' => 'Produto não encontrado no carrinho.']);
+            die();
+        }
+        if ($action !== 'incrementar' && $action !== 'decrementar') {
+            echo json_encode(['erro' => 'Ação inválida.']);
+            die();
+        }
+        $quantidade = $_SESSION['carrinho'][$produto_id]['quantidade'];
+        if ($action === 'incrementar') {
+            $quantidade++;
+            $_SESSION['carrinho'][$produto_id]['preco_total'] = $_SESSION['carrinho'][$produto_id]['preco'] * $quantidade;
+        } elseif ($action === 'decrementar') {
+            if ($quantidade <= 1) {
+                unset($_SESSION['carrinho'][$produto_id]);
+                echo json_encode(['sucesso' => true, 'mensagem' => 'aaQuantidade atualizada com sucesso.']);
+                die();
+            }
+            $quantidade--;
+            $_SESSION['carrinho'][$produto_id]['preco_total'] = $_SESSION['carrinho'][$produto_id]['preco'] * $quantidade;
+        }
+
+        $_SESSION['carrinho'][$produto_id]['quantidade'] = $quantidade;
+        
+
+        echo json_encode(['sucesso' => true, 'mensagem' => 'Quantidade atualizada com sucesso.']);
+        die();
     }
 
     public function mostrarCarrinho()
@@ -112,8 +149,14 @@ class CarrinhoController
         foreach ($carrinho as $item) {
             $subtotal += $item['preco'] * $item['quantidade'];
         }
-        $frete = calcularFrete($subtotal);
-        $total = $subtotal + $frete;
+        $frete = 0;
+        if ($_SESSION['cep']) {
+            $frete = calcularFrete($subtotal);
+        }
+        $total = $subtotal +  $frete;
+        $_SESSION['subtotal'] = $subtotal;
+        $_SESSION['frete'] = $frete;
+        $_SESSION['total'] = $total;
 
         include __DIR__ . '/../views/pedidos/carrinho.php';
 
@@ -135,47 +178,48 @@ class CarrinhoController
         $total = $subtotal - $desconto + $frete;
     }
 
-    public function finalizarPedido()
+    public function finalizar()
     {
-        $endereco = $_POST['endereco'];
-        $cep = $_POST['cep'];
+        session_start();
+        ob_clean();
 
-        require_once __DIR__ . '/../helpers/via_cep.php';
-
-        $dados_cep = buscarEnderecoPorCep($cep);
-        if (isset($dados_cep['erro'])) {
-            echo "CEP inválido!";
-            return;
-        }
-
-        $carrinho = $_SESSION['carrinho'] ?? [];
-        if (empty($carrinho)) {
+        if (empty($_SESSION['carrinho'])) {
             echo "Carrinho vazio!";
             return;
         }
 
-        $subtotal = 0;
-        foreach ($carrinho as $item) {
-            $subtotal += $item['preco'] * $item['quantidade'];
+        include __DIR__ . '/../views/pedidos/finalizar.php';
+    }
+
+    public function finalizarPedido()
+    {
+        ob_clean();
+        header('Content-Type: application/json');
+        $input = file_get_contents('php://input');
+        $dados = json_decode($input, true);
+        $email = $dados['email'] ?? null;
+
+        if (empty($_SESSION['carrinho'])) {
+            echo "Carrinho vazio!";
+            return;
         }
-        $frete = calcularFrete($subtotal);
-        $total = $subtotal + $frete;
 
-        Pedido::salvar($carrinho, $subtotal, $frete, $total, $endereco, $cep);
-
-        require_once __DIR__ . '/../helpers/mailer.php';
-
-        $mensagem = "<h2>Pedido Realizado</h2>";
-        foreach ($carrinho as $item) {
+        Pedido::salvar($_SESSION['carrinho'], $_SESSION['subtotal'], $_SESSION['frete'], $_SESSION['total'], $_SESSION['endereco'], $_SESSION['cep']);
+        $mensagem = "<h2>Pedido realizado com sucesso!</h2>";
+        foreach ($_SESSION['carrinho'] as $item) {
             $mensagem .= "{$item['nome']} - Qtd: {$item['quantidade']}<br>";
         }
-        $mensagem .= "<p>Total: R$ " . number_format($total, 2, ',', '.') . "</p>";
-        $mensagem .= "<p>Endereço: $endereco</p>";
+        $mensagem .= "<p>Total: R$ " . number_format($_SESSION['total'], 2, ',', '.') . "</p>";
+        $mensagem .= "<p>Endereço: ".$_SESSION['endereco']."</p>";
+        include __DIR__ . '/../helpers/mailer.php';
+        enviarEmail($email, "Confirmação de Pedido", $mensagem);
 
-        enviarEmail("cliente@email.com", "Confirmação de Pedido", $mensagem);
-
-        unset($_SESSION['carrinho']); // limpa carrinho
-        echo "Pedido finalizado com sucesso!";
+        unset($_SESSION['carrinho']);
+        unset($_SESSION['subtotal']);
+        unset($_SESSION['frete']);
+        unset($_SESSION['total']);
+        echo json_encode(['sucesso' => true, 'mensagem' => 'Pedido finalizado com sucesso!']);
+        die();
     }
 
     public function removerItem()
@@ -195,6 +239,36 @@ class CarrinhoController
         unset($_SESSION['carrinho'][$produto_id]);
 
         echo json_encode(['sucesso' => true, 'mensagem' => 'Produto removido do carrinho.']);
+        die();
+    }
+
+    public function calcularFrete()
+    {
+        session_start();
+        ob_clean();
+
+        header('Content-Type: application/json');
+        $input = file_get_contents('php://input');
+        $dados = json_decode($input, true);
+        $cep = $dados['cep'] ?? null;
+
+        if (!$cep) {
+            echo json_encode(['erro' => 'CEP não informado.']);
+            die();
+        }
+
+        require_once __DIR__ . '/../helpers/via_cep.php';
+
+        $dados_cep = buscarEnderecoPorCep($cep);
+        if (isset($dados_cep['erro'])) {
+            echo json_encode(['erro' => 'CEP inválido.']);
+            die();
+        }
+
+        $_SESSION['cep'] = $cep;
+        $_SESSION['endereco'] = $dados_cep['logradouro'] . ', ' . $dados_cep['bairro'] . ', ' . $dados_cep['localidade'] . ' - ' . $dados_cep['uf'];
+
+        echo json_encode(['sucesso' => true, 'endereco' => $dados_cep]);
         die();
     }
 }

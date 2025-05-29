@@ -1,104 +1,83 @@
 <?php
-// Simples roteador básico para PHP puro
-
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $method = $_SERVER['REQUEST_METHOD'];
 
+// Remove barra final (se houver)
+$uri = rtrim($uri, '/');
+
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type");
+
+if ($method === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
+
 switch ($uri) {
-    case '/':
-    case '/produtos':
-        require_once __DIR__ . '/../controllers/ProdutoController.php';
-        $controller = new ProdutoController();
-        $controller->index();
-        break;
-
-    case '/produtos/salvar':
+    case '/api/produtos/salvar':
         require_once __DIR__ . '/../controllers/ProdutoController.php';
         $controller = new ProdutoController();
         $controller->salvar();
         break;
 
-    case '/estoques':
-        require_once __DIR__ . '/../controllers/ProdutoController.php';
-        $controller = new ProdutoController();
-        $controller->form();
-        break;
-
-    case '/estoques/salvar':
+    case '/api/estoques/salvar':
         require_once __DIR__ . '/../controllers/ProdutoController.php';
         $controller = new ProdutoController();
         $controller->salvar();
         break;
 
-    case (preg_match('#^/estoques/editar$#', $uri) ? true : false):
+    case (preg_match('#^/api/estoques/editar$#', $uri) ? true : false):
         require_once __DIR__ . '/../controllers/ProdutoController.php';
         $controller = new ProdutoController();
         $controller->editar();
         break;
 
-    case '/cupons':
-        require_once __DIR__ . '/../controllers/CupomController.php';
-        $controller = new CupomController();
-        $controller->gerenciar();
-        break;
-
-    case '/cupons/criar':
+    case '/api/cupons/criar':
         require_once __DIR__ . '/../controllers/CupomController.php';
         $controller = new CupomController();
         $controller->criar();
         break;
 
-    case '/carrinho':
-        require_once __DIR__ . '/../controllers/CarrinhoController.php';
-        $controller = new CarrinhoController();
-        $controller->mostrarCarrinho();
-        break;
-
-    case '/carrinho/adicionar':
+    case '/api/carrinho/adicionar':
         require_once __DIR__ . '/../controllers/CarrinhoController.php';
         $controller = new CarrinhoController();
         $controller->adicionar();
         // NÃO adicione break aqui - o método adicionar() já faz die()
         break;
     
-    case (preg_match('#^/carrinho/remover$#', $uri) ? true : false):
+    case (preg_match('#^/api/carrinho/remover$#', $uri) ? true : false):
         require_once __DIR__ . '/../controllers/CarrinhoController.php';
         $controller = new CarrinhoController();
         $controller->removerItem();
         // NÃO adicione break aqui - o método adicionar() já faz die()
         break;
     
-    case '/carrinho/atuaizar-quantidade':
+    case '/api/carrinho/atuaizar-quantidade':
         require_once __DIR__ . '/../controllers/CarrinhoController.php';
         $controller = new CarrinhoController();
         $controller->atualizarQuantidade();
         break;
     
-    case '/carrinho/calcular-frete':
+    case '/api/carrinho/calcular-frete':
         require_once __DIR__ . '/../controllers/CarrinhoController.php';
         $controller = new CarrinhoController();
         $controller->calcularFrete();
         break;
 
-    case '/carrinho/comprar':
+    case '/api/carrinho/comprar':
         require_once __DIR__ . '/../controllers/CarrinhoController.php';
         $controller = new CarrinhoController();
         $controller->comprar();
         break;
 
-    case '/pedido/finalizar':
-        require_once __DIR__ . '/../controllers/CarrinhoController.php';
-        $controller = new CarrinhoController();
-        $controller->finalizar();
-        break;
-
-    case '/pedido/finalizar-pedido':
+    case '/api/pedido/finalizar-pedido':
         require_once __DIR__ . '/../controllers/CarrinhoController.php';
         $controller = new CarrinhoController();
         $controller->finalizarPedido();
         break;
 
-    case '/webhook':
+    case '/api/webhook':
         require_once __DIR__ . '/../controllers/WebhookController.php';
         $controller = new WebhookController();
         $controller->receber();
