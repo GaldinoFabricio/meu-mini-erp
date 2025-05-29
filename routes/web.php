@@ -61,10 +61,10 @@ switch ($uri) {
         // NÃO adicione break aqui - o método adicionar() já faz die()
         break;
     
-    case '/carrinho/remover':
+    case (preg_match('#^/carrinho/remover$#', $uri) ? true : false):
         require_once __DIR__ . '/../controllers/CarrinhoController.php';
         $controller = new CarrinhoController();
-        $controller->remover();
+        $controller->removerItem();
         // NÃO adicione break aqui - o método adicionar() já faz die()
         break;
 

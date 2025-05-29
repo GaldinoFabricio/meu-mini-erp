@@ -10,11 +10,8 @@ class CarrinhoController
     public function adicionar()
     {
         session_start();
-
-        // Limpa qualquer output anterior
         ob_clean();
 
-        // Define o header JSON
         header('Content-Type: application/json');
 
         $produto_id = $_GET['produto_id'] ?? null;
@@ -31,15 +28,12 @@ class CarrinhoController
             die();
         }
 
-        // Iniciar carrinho se não existir
         if (!isset($_SESSION['carrinho'])) {
             $_SESSION['carrinho'] = [];
         }
 
-        // Adiciona ou atualiza item
         if (isset($_SESSION['carrinho'][$produto_id])) {
             $_SESSION['carrinho'][$produto_id]['quantidade'] += $quantidade;
-            $_SESSION['quantidade'] += $quantidade;
         } else {
             $_SESSION['carrinho'][$produto_id] = [
                 'nome' => $produto['nome'],
@@ -188,17 +182,17 @@ class CarrinhoController
     {
         session_start();
         ob_clean();
+
         header('Content-Type: application/json');
 
         $produto_id = $_GET['produto_id'] ?? null;
-        die(json_encode(['erro' => 'Método não implementado.']));
+
         if (!$produto_id || !isset($_SESSION['carrinho'][$produto_id])) {
             echo json_encode(['erro' => 'Produto não encontrado no carrinho.']);
             die();
         }
 
         unset($_SESSION['carrinho'][$produto_id]);
-        $_SESSION['quantidade']--;
 
         echo json_encode(['sucesso' => true, 'mensagem' => 'Produto removido do carrinho.']);
         die();

@@ -51,11 +51,16 @@
 <script>
 function remover(id) {
     fetch('/carrinho/remover?produto_id=' + id, {
-        method: 'GET'
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
     })
     .then(response => {
         if (response.ok) {
+            //alert(data.mensagem);
             window.location.reload();
+            return;
         } else {
             alert('Erro ao remover item do carrinho.');
         }
