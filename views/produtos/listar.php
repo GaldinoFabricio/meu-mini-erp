@@ -1,9 +1,5 @@
 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 40px;">
     <h3>Produtos</h3>
-    <a href="/produtos/criar"
-        style="text-decoration: none; padding: 10px 20px; background-color: #28a745; color: white; border-radius: 5px; font-weight: bold;">
-        + Novo Produto
-    </a>
 </div>
 <section style="display: flex; flex-wrap: wrap; gap: 20px; padding: 10px;">
     <?php foreach ($produtos as $p): ?>

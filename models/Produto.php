@@ -25,4 +25,11 @@ class Produto
         $stmt->execute([$id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
+
+    public static function atualizar($id, $nome, $preco, $estoque)
+    {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare("UPDATE produtos SET nome = ?, preco = ?, estoque = ? WHERE id = ?");
+        $stmt->execute([$nome, $preco, $estoque, $id]);
+    }
 }

@@ -12,12 +12,6 @@ switch ($uri) {
         $controller->index();
         break;
 
-    case '/produtos/criar':
-        require_once __DIR__ . '/../controllers/ProdutoController.php';
-        $controller = new ProdutoController();
-        $controller->form();
-        break;
-
     case '/produtos/salvar':
         require_once __DIR__ . '/../controllers/ProdutoController.php';
         $controller = new ProdutoController();
@@ -25,14 +19,20 @@ switch ($uri) {
         break;
 
     case '/estoques':
-        require_once __DIR__ . '/../controllers/EstoqueController.php';
-        $controller = new EstoqueController();
-        $controller->listar();
+        require_once __DIR__ . '/../controllers/ProdutoController.php';
+        $controller = new ProdutoController();
+        $controller->form();
+        break;
+
+    case '/estoques/salvar':
+        require_once __DIR__ . '/../controllers/ProdutoController.php';
+        $controller = new ProdutoController();
+        $controller->salvar();
         break;
 
     case (preg_match('#^/estoques/editar$#', $uri) ? true : false):
-        require_once __DIR__ . '/../controllers/EstoqueController.php';
-        $controller = new EstoqueController();
+        require_once __DIR__ . '/../controllers/ProdutoController.php';
+        $controller = new ProdutoController();
         $controller->editar();
         break;
 

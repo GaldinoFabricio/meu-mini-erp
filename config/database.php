@@ -1,8 +1,8 @@
 <?php
-$host = '192.168.0.3';
+$host = 'localhost';
 $db = 'meu_mini_erp';
-$user = 'cebraco';
-$pass = '*0cArb&d*';
+$user = 'root';
+$pass = '';
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$db;charset=utf8", $user, $pass);

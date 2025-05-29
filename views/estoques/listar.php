@@ -13,7 +13,7 @@
             <?php foreach ($estoques as $estoque): ?>
                 <tr>
                     <td><?= htmlspecialchars($estoque['nome']) ?></td>
-                    <td><?= (int)$estoque['quantidade'] ?></td>
+                    <td><?= (int)$estoque['estoque'] ?></td>
                     <td>
                         <a href="/estoques/editar?id=<?= $estoque['id'] ?>" class="btn btn-sm btn-warning">Editar</a>
                     </td>
@@ -24,5 +24,3 @@
         <?php endif; ?>
     </tbody>
 </table>
-
-<?php include __DIR__ . '/../templates/footer.php'; ?>
